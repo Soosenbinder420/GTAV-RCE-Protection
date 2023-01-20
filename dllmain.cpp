@@ -222,27 +222,39 @@ bool init_console() {
 }
 #pragma endregion
 
-uint8_t* handle_sge;
-uint8_t* gpn;
+uint8_t* handle_sge; //ScriptedGameEvent Handler
+uint8_t* gpn; //GetPlayerName
 
+//SGE Hook
 bool hk_handle_sge(int64_t a1, int64_t a2, int64_t a3)
 {
-	switch (*reinterpret_cast<int*>(a1 + 0x224)) {
+	//Too lazy to use classes, I made this in 5min or so lmao
+	switch (*reinterpret_cast<int*>(a1 + 0x224)) { //Check Script Event Id
 	case 1279059857:
 	case -343495611:
+		//Nice log msg to blame evil rebound or north users, also really shitty get_player_name call
 		std::cout << "Blocked RCE from " << (reinterpret_cast<const char*(*)(int)>(gpn))(*reinterpret_cast<char*>(a2 + 0x21)) << std::endl;
+		//Block dat shit boiiiiiis
 		return true;
 	}
+	//Restore first byte to avoid triggering the breakpoint again
 	*handle_sge = 0x40;
+	//Call the original
 	bool ret = (reinterpret_cast<decltype(&hk_handle_sge)>(handle_sge))(a1, a2, a3);
+	//Set a breakpoint again
 	*handle_sge = 0xCC;
+	//return whatever it should return lol
 	return ret;
 }
 
+//Main func boiiiiiiiis
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+	//Create da KewlKidzKlub Thread
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) CreateThread(0, 0, [](LPVOID) -> DWORD {
+		//Create a console
 		init_console();
+		//Scan patterns (might be epic)
 		pattern_batch sussy;
 		sussy.add("ligma", "40 53 48 81 EC ? ? ? ? 44 8B 81", [=](ptr_manage ptr) {
 			handle_sge = ptr.as<uint8_t*>();
@@ -251,10 +263,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 			gpn = ptr.as<uint8_t*>();
 		});
 		sussy.run();
+		//Set breakpoint on scriptedgameevent handler
 		*handle_sge = 0xCC;
+		//Add exception handler
 		AddVectoredExceptionHandler(1, [](EXCEPTION_POINTERS* exp) -> LONG {
 			if (exp->ExceptionRecord->ExceptionCode != EXCEPTION_BREAKPOINT) return EXCEPTION_CONTINUE_SEARCH;
 			if (reinterpret_cast<PVOID>(exp->ContextRecord->Rip) != handle_sge) return EXCEPTION_CONTINUE_SEARCH;
+			//if exception occured at our address, replace the ptr with our hook
 			exp->ContextRecord->Rip = reinterpret_cast<DWORD64>(hk_handle_sge);
 			return EXCEPTION_CONTINUE_EXECUTION;
 		});
