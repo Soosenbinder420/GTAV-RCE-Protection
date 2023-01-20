@@ -227,7 +227,6 @@ uint8_t* gpn;
 
 bool hk_handle_sge(int64_t a1, int64_t a2, int64_t a3)
 {
-	std::cout << "test" << std::endl;
 	switch (*reinterpret_cast<int*>(a1 + 0x224)) {
 	case 1279059857:
 	case -343495611:
