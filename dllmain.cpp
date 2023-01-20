@@ -256,8 +256,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 		init_console();
 		//Scan patterns (might be epic)
 		pattern_batch sussy;
-		sussy.add("ligma", "40 53 48 81 EC ? ? ? ? 44 8B 81", [=](ptr_manage ptr) {
-			handle_sge = ptr.as<uint8_t*>();
+		sussy.add("ligma", "77 42 48 8D 51 70", [=](ptr_manage ptr) {
+			handle_sge = ptr.add(-0x1C).as<uint8_t*>();
 		});
 		sussy.add("fuck", "40 53 48 83 EC 20 80 3D ? ? ? ? ? 8B D9 74 22 33 D2 E8", [=](ptr_manage ptr) {
 			gpn = ptr.as<uint8_t*>();
